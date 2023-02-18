@@ -5,6 +5,8 @@
  * Bruce MacKinnon 18-Feb-2023
  * 
  * Targeted at a Teensy 3.2 controller.
+ * 
+ * Serial commands can be used to change the duty cycle.
  */
 const unsigned long pwmHz = 250L;
 const unsigned long pwmPeriodUs = 1000000L / pwmHz;
@@ -16,16 +18,33 @@ const int ecuInputPin = 2;
 const int iacvOutputPin = 3;
 
 unsigned long sample = 0;
-unsigned long iacvDutyPct = 33L;
+unsigned long iacvDutyPct = 50L;
 int iacvState = 1;
 
 void setup() {
   pinMode(ecuInputPin, INPUT);
   pinMode(iacvOutputPin, OUTPUT);
   digitalWrite(iacvOutputPin, 1);
+
+  Serial.begin(9600);
 }
 
 void loop() {
+  
+  if (Serial.available()) {
+    int r = Serial.read();
+    if (r == '-') {
+      if (iacvDutyPct > 2) {
+        iacvDutyPct -= 2;
+      }
+    }
+    else if (r == '=') {
+      if (iacvDutyPct < 98) {
+        iacvDutyPct += 2;
+      }
+    }
+  }
+
   if (timer1 > samplePeriodUs) {
     // Sample
     
